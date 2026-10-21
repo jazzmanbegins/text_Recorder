@@ -51,5 +51,6 @@
 - `db.js` — เก็บไฟล์เสียงและข้อความใน IndexedDB
 - `transcribe.js` — เลือกวิธีถอดเสียง + export `.srt`
 - `local-whisper.js` / `local-whisper-worker.js` — Whisper ในเบราว์เซอร์ (transformers.js)
+- `icons/` — ไอคอน extension (`icons/make_icons.py` คือสคริปต์ที่สร้างไฟล์ PNG พวกนี้ ไม่ได้ใช้ตอนรัน extension)
 - `lib/` — transformers.js และ ONNX Runtime Web (ใส่ไว้ในเครื่อง เพราะ MV3 ห้ามโหลดโค้ดจากภายนอก — ไม่อยู่ใน git ให้รัน `setup-lib.bat`)
 - `local-server/` — เซิร์ฟเวอร์ faster-whisper แบบ OpenAI-compatible

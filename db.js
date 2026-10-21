@@ -37,7 +37,7 @@ export async function listRecordings() {
 
 export async function updateRecording(id, patch) {
   const rec = await getRecording(id);
-  if (!rec) throw new Error('ไม่พบไฟล์บันทึก');
+  if (!rec) throw new Error('Recording not found');
   Object.assign(rec, patch);
   await saveRecording(rec);
   return rec;

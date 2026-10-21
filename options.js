@@ -1,12 +1,16 @@
 import { PROVIDERS, loadSettings, saveSettings, modelFor, checkLocalServer } from './transcribe.js';
 
+// Embedded in the popup's <iframe>: the host page already shows a "Settings" heading, so
+// drop this page's own copy (CSP blocks inline <script> in <head>, so this runs here instead).
+if (window.self !== window.top) document.documentElement.classList.add('embedded');
+
 const $ = (id) => document.getElementById(id);
 
 const NOTES = {
-  browser: 'ถอดเสียงใน Chrome ด้วยการ์ดจอ (WebGPU) — ไม่ต้องใช้ API Key หรือติดตั้งอะไรเพิ่ม ครั้งแรกจะดาวน์โหลดโมเดลจาก Hugging Face แล้วเก็บไว้ใช้ครั้งต่อไป',
-  local: 'ส่งเสียงไปถอดที่โปรแกรม Whisper บนเครื่องนี้ — แม่นที่สุดและเร็วมากถ้ามีการ์ดจอ NVIDIA ต้องเปิด local-server\\start.bat ค้างไว้ (ดู README)',
-  groq: 'ส่งเสียงไปถอดบนคลาวด์ของ Groq — สร้าง API Key ฟรีได้ที่ console.groq.com/keys (จำกัดไฟล์ 25 MB)',
-  openai: 'ส่งเสียงไปถอดบนคลาวด์ของ OpenAI — สร้าง API Key ที่ platform.openai.com/api-keys (จำกัดไฟล์ 25 MB)',
+  browser: 'Transcribes in Chrome using your GPU (WebGPU) — no API key or install needed. The model downloads from Hugging Face the first time and is cached after that.',
+  local: 'Sends audio to a local Whisper server on this machine — most accurate, and very fast with an NVIDIA GPU. Keep local-server\\start.bat running (see README).',
+  groq: "Sends audio to Groq's cloud for transcription — get a free API key at console.groq.com/keys (25 MB file limit).",
+  openai: "Sends audio to OpenAI's cloud for transcription — get an API key at platform.openai.com/api-keys (25 MB file limit).",
 };
 
 let settings;
@@ -47,12 +51,12 @@ async function init() {
   };
 
   $('testLocal').onclick = async () => {
-    $('localStatus').textContent = '⏳ กำลังเชื่อมต่อ...';
+    $('localStatus').textContent = 'Connecting...';
     try {
       const info = await checkLocalServer($('localUrl').value.trim());
-      $('localStatus').textContent = `✅ เชื่อมต่อได้ — device: ${info.device ?? '?'}`;
+      $('localStatus').textContent = `Connected — device: ${info.device ?? '?'}`;
     } catch (e) {
-      $('localStatus').textContent = `❌ เชื่อมต่อไม่ได้ (${e.message}) — เปิด local-server\\start.bat แล้วหรือยัง?`;
+      $('localStatus').textContent = `Could not connect (${e.message}) — have you started local-server\\start.bat?`;
     }
   };
 
@@ -61,7 +65,7 @@ async function init() {
     settings.provider = shown;
     settings.language = $('language').value;
     await saveSettings(settings);
-    $('saved').textContent = '✅ บันทึกแล้ว';
+    $('saved').textContent = 'Saved';
     setTimeout(() => ($('saved').textContent = ''), 2000);
   };
 }

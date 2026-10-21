@@ -11,7 +11,7 @@ async function ensureOffscreen() {
   await chrome.offscreen.createDocument({
     url: OFFSCREEN_URL,
     reasons: ['USER_MEDIA'],
-    justification: 'บันทึกเสียงจากแท็บด้วย MediaRecorder',
+    justification: 'Records tab audio with MediaRecorder',
   });
 }
 
@@ -28,7 +28,7 @@ async function setState(state) {
 
 async function startRecording(tabId) {
   const state = await getState();
-  if (state.recording) throw new Error('กำลังอัดเสียงอยู่แล้ว');
+  if (state.recording) throw new Error('Already recording');
 
   const tab = await chrome.tabs.get(tabId);
   let streamId;
@@ -36,10 +36,10 @@ async function startRecording(tabId) {
     streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
   } catch (e) {
     if (/active stream/i.test(e.message)) {
-      throw new Error('แท็บนี้กำลังถูกอัดหรือแชร์อยู่แล้ว (อาจเป็น extension อื่น) — ปิดตัวนั้นหรือรีโหลดแท็บแล้วลองใหม่');
+      throw new Error('This tab is already being recorded or shared (possibly by another extension) — close that one or reload the tab and try again');
     }
     if (/chrome pages|cannot be captured|webstore/i.test(e.message)) {
-      throw new Error('อัดเสียงหน้านี้ไม่ได้ — ใช้ได้กับหน้าเว็บทั่วไปเท่านั้น (ไม่ใช่ chrome:// หรือ Chrome Web Store)');
+      throw new Error('Cannot record this page — only works on regular web pages (not chrome:// or the Chrome Web Store)');
     }
     throw e;
   }
@@ -51,7 +51,7 @@ async function startRecording(tabId) {
     streamId,
     meta: { title: tab.title || 'Untitled', url: tab.url || '' },
   });
-  if (!res?.ok) throw new Error(res?.error || 'เริ่มอัดเสียงไม่สำเร็จ');
+  if (!res?.ok) throw new Error(res?.error || 'Failed to start recording');
 
   await setState({ recording: true, tabId, startedAt: Date.now(), title: tab.title });
 }
@@ -61,7 +61,7 @@ async function stopRecording() {
   if (!state.recording) return null;
   const res = await chrome.runtime.sendMessage({ target: 'offscreen', type: 'stop' });
   await setState({ recording: false });
-  if (!res?.ok) throw new Error(res?.error || 'หยุดอัดเสียงไม่สำเร็จ');
+  if (!res?.ok) throw new Error(res?.error || 'Failed to stop recording');
   return res.id;
 }
 

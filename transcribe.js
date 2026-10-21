@@ -6,26 +6,26 @@ import { transcribeInBrowser } from './local-whisper.js';
 
 export const PROVIDERS = {
   browser: {
-    label: 'ในเบราว์เซอร์ (ไม่ต้องใช้ API)',
+    label: 'In-browser (no API required)',
     models: [
-      { id: 'onnx-community/whisper-large-v3-turbo', label: 'large-v3-turbo — แม่นสุด (~1.6 GB, ควรมีการ์ดจอ)' },
-      { id: 'onnx-community/whisper-small', label: 'small — สมดุล (~410 MB)' },
-      { id: 'onnx-community/whisper-base', label: 'base — เร็ว/เล็ก (~165 MB, ภาษาไทยไม่ค่อยแม่น)' },
+      { id: 'onnx-community/whisper-large-v3-turbo', label: 'large-v3-turbo — most accurate (~1.6 GB, GPU recommended)' },
+      { id: 'onnx-community/whisper-small', label: 'small — balanced (~410 MB)' },
+      { id: 'onnx-community/whisper-base', label: 'base — fast/small (~165 MB, less accurate for Thai)' },
     ],
     needsKey: false,
   },
   local: {
-    label: 'Local Server (Whisper บนเครื่อง)',
+    label: 'Local Server (Whisper on this machine)',
     models: [
-      { id: 'large-v3', label: 'large-v3 — แม่นสุด (ต้องใช้ GPU)' },
-      { id: 'large-v3-turbo', label: 'large-v3-turbo — เร็วกว่า แม่นใกล้เคียง' },
+      { id: 'large-v3', label: 'large-v3 — most accurate (requires GPU)' },
+      { id: 'large-v3-turbo', label: 'large-v3-turbo — faster, nearly as accurate' },
       { id: 'medium', label: 'medium' },
       { id: 'small', label: 'small' },
     ],
     needsKey: false,
   },
   groq: {
-    label: 'Groq API (มี free tier)',
+    label: 'Groq API (free tier available)',
     baseUrl: 'https://api.groq.com/openai/v1',
     models: [{ id: 'whisper-large-v3' }, { id: 'whisper-large-v3-turbo' }],
     needsKey: true,
@@ -86,9 +86,9 @@ async function transcribeHttp(blob, settings, model) {
   const baseUrl = provider === 'local' ? settings.localUrl.replace(/\/+$/, '') : info.baseUrl;
   const apiKey = settings.apiKeys[provider];
 
-  if (info.needsKey && !apiKey) throw new Error(`ยังไม่ได้ใส่ API Key ของ ${info.label} (ไปที่หน้าตั้งค่า)`);
+  if (info.needsKey && !apiKey) throw new Error(`Missing API key for ${info.label} (go to Settings)`);
   if (provider !== 'local' && blob.size > MAX_UPLOAD_BYTES) {
-    throw new Error(`ไฟล์ใหญ่เกิน 25 MB (${(blob.size / 1048576).toFixed(1)} MB) — ใช้โหมดในเบราว์เซอร์หรือ Local Server แทน`);
+    throw new Error(`File exceeds 25 MB (${(blob.size / 1048576).toFixed(1)} MB) — use in-browser mode or Local Server instead`);
   }
 
   // gpt-4o-* models don't return timestamped segments (needed for .srt).
@@ -107,7 +107,7 @@ async function transcribeHttp(blob, settings, model) {
       body: form,
     });
   } catch (e) {
-    if (provider === 'local') throw new Error(`เชื่อมต่อ Local Server ไม่ได้ (${baseUrl}) — เปิด local-server\\start.bat แล้วหรือยัง?`);
+    if (provider === 'local') throw new Error(`Could not connect to Local Server (${baseUrl}) — have you started local-server\\start.bat?`);
     throw e;
   }
   if (!res.ok) {

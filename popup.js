@@ -13,14 +13,14 @@ function render(state) {
   clearInterval(timerHandle);
   const btn = $('toggle');
   if (state.recording) {
-    btn.textContent = '■ หยุดและบันทึก';
+    btn.textContent = 'Stop & Save';
     btn.className = 'rec';
-    $('tabTitle').textContent = `กำลังอัด: ${state.title || ''}`;
+    $('tabTitle').textContent = `Recording: ${state.title || ''}`;
     const tick = () => ($('timer').textContent = fmt((Date.now() - state.startedAt) / 1000));
     tick();
     timerHandle = setInterval(tick, 500);
   } else {
-    btn.textContent = '● เริ่มอัดเสียงแท็บนี้';
+    btn.textContent = 'Record';
     btn.className = 'primary';
     $('timer').textContent = '00:00';
   }
@@ -31,6 +31,7 @@ async function init() {
   const { state } = await send('state');
   if (!state.recording) $('tabTitle').textContent = tab?.title || '';
   render(state);
+  $('recordingsFrame').src = 'recordings.html';
 
   $('toggle').onclick = async () => {
     const btn = $('toggle');
@@ -41,14 +42,14 @@ async function init() {
       if (state.recording) {
         const res = await send('stop');
         if (!res.ok) throw new Error(res.error);
-        $('status').textContent = '✅ บันทึกแล้ว';
+        $('status').textContent = 'Saved';
         render({ recording: false });
-        chrome.tabs.create({ url: `recordings.html#${res.id}` });
+        $('recordingsFrame').src = `recordings.html#${res.id}`;
       } else {
         const res = await send('start', { tabId: tab.id });
         if (!res.ok) throw new Error(res.error);
         render((await send('state')).state);
-        $('status').textContent = 'เล่นวิดีโอได้เลย — ปิด popup ได้ การอัดจะทำงานต่อ';
+        $('status').textContent = 'You can play the video now — closing the popup is fine, recording continues.';
       }
     } catch (e) {
       $('status').innerHTML = '';
@@ -61,8 +62,15 @@ async function init() {
     }
   };
 
-  $('openList').onclick = (e) => { e.preventDefault(); chrome.tabs.create({ url: 'recordings.html' }); };
-  $('openOptions').onclick = (e) => { e.preventDefault(); chrome.runtime.openOptionsPage(); };
+  $('openOptions').onclick = (e) => {
+    e.preventDefault();
+    $('settingsFrame').src = 'options.html';
+    $('settingsOverlay').hidden = false;
+  };
+  $('closeSettings').onclick = () => {
+    $('settingsOverlay').hidden = true;
+    $('settingsFrame').src = '';
+  };
 }
 
 init();

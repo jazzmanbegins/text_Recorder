@@ -1,26 +1,58 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    body { width: 300px; padding: 16px; }
-    #timer { font: 600 32px/1 ui-monospace, Consolas, monospace; text-align: center; margin: 12px 0; }
+    /* Keep this page's own height tight — the popup window sizes to fit it, and if the total
+       grows past Chrome's cap, the popup itself gets a second, redundant scrollbar on top of
+       the iframe's own. Only the iframe below should ever need to scroll. */
+    html { background: transparent; }
+    body { width: 400px; padding: 16px; border-radius: 14px; overflow: hidden; }
+    h1 { margin: 0 0 6px; }
+    #timer { font: 600 32px/1 ui-monospace, Consolas, monospace; text-align: center; margin: 8px 0; }
     #toggle { width: 100%; padding: 10px; font-size: 15px; }
-    #status { text-align: center; min-height: 20px; margin-top: 8px; }
-    .links { display: flex; justify-content: space-between; margin-top: 14px; }
+    #status { text-align: center; min-height: 18px; margin-top: 6px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin: 8px 0 10px; }
+    .section-header h2 { font-size: 15px; }
+    #recordingsFrame { width: 100%; height: 300px; border: 0; display: block; border-radius: var(--radius); }
+    .overlay {
+      position: fixed; inset: 0; background: var(--bg); z-index: 10;
+      display: flex; flex-direction: column;
+      border-radius: 14px; overflow: hidden;
+    }
+    .overlay[hidden] { display: none; }
+    .overlay-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .overlay-header h2 { font-size: 15px; margin: 0; }
+    #settingsFrame { flex: 1; width: 100%; border: 0; }
   </style>
 </head>
 <body>
-  <h1>🎙️ Text Recorder</h1>
+  <h1>Text Recorder</h1>
   <div class="muted" id="tabTitle"></div>
   <div id="timer">00:00</div>
-  <button id="toggle" class="primary">● เริ่มอัดเสียงแท็บนี้</button>
+  <button id="toggle" class="primary">Record</button>
   <div id="status" class="muted"></div>
-  <div class="links">
-    <a href="#" id="openList">📂 ไฟล์ที่อัดไว้ / ถอดข้อความ</a>
-    <a href="#" id="openOptions">⚙️ ตั้งค่า</a>
+  <div class="section-header">
+    <h2>Recordings</h2>
+    <a href="#" id="openOptions">Settings</a>
   </div>
+  <iframe id="recordingsFrame" title="Recordings"></iframe>
+
+  <div id="settingsOverlay" class="overlay" hidden>
+    <div class="overlay-header">
+      <button id="closeSettings">Back</button>
+      <h2>Settings</h2>
+    </div>
+    <iframe id="settingsFrame" title="Settings"></iframe>
+  </div>
+
   <script type="module" src="popup.js"></script>
 </body>
 </html>

@@ -1,50 +1,67 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>ไฟล์ที่อัดไว้ - Text Recorder</title>
+  <title>Recordings - Text Recorder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     main { max-width: 860px; margin: 32px auto; padding: 0 16px; }
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .card { margin-bottom: 12px; }
+    .card { margin-bottom: 12px; position: relative; }
     .card.highlight { border-color: var(--accent); }
     audio { width: 100%; margin: 10px 0; }
     textarea { min-height: 160px; resize: vertical; margin-top: 10px; line-height: 1.7; }
-    .title { word-break: break-word; }
+    .title { word-break: break-word; padding-right: 70px; line-height: 1.25; font-weight: 400; margin-bottom: 10px; }
+    .delete-btn { position: absolute; top: 12px; right: 12px; }
     #empty { text-align: center; padding: 48px 0; }
+    /* Embedded in the popup's <iframe>: the host page already shows a heading and a settings
+       link, so drop this page's own copies to avoid showing them twice. Also shrink everything
+       down — the iframe sits in a narrow 400px-wide popup, not a full browser tab. */
+    html.embedded header { display: none; }
+    html.embedded body { font-size: 12px; }
+    html.embedded main { margin: 10px auto; padding: 0 10px; }
+    html.embedded .card { padding: 8px; margin-bottom: 8px; }
+    html.embedded .title { padding-right: 60px; }
+    html.embedded .meta { font-size: 10px; margin-bottom: 8px; }
+    html.embedded .delete-btn { top: 8px; right: 8px; }
+    html.embedded .row { gap: 6px; }
+    html.embedded audio { margin: 6px 0; height: 32px; }
+    html.embedded textarea { min-height: 90px; margin-top: 6px; }
+    html.embedded button { padding: 4px 8px; }
+    html.embedded #empty { padding: 24px 0; }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <h1>📂 ไฟล์เสียงที่อัดไว้</h1>
-      <a href="options.html">⚙️ ตั้งค่า API</a>
+      <h1>Recordings</h1>
+      <a href="options.html">API Settings</a>
     </header>
     <div id="list"></div>
-    <div id="empty" class="muted" hidden>ยังไม่มีไฟล์ — เปิดวิดีโอแล้วกดไอคอน extension เพื่อเริ่มอัดเสียง</div>
+    <div id="empty" class="muted" hidden>No recordings yet — open a video and click the extension icon to start recording.</div>
   </main>
 
   <template id="item">
     <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <h2 class="title"></h2>
-        <button class="danger" data-act="delete">ลบ</button>
-      </div>
+      <button class="danger delete-btn" data-act="delete">Delete</button>
+      <h2 class="title"></h2>
       <div class="muted meta"></div>
       <audio controls preload="metadata"></audio>
       <div class="row">
-        <button class="primary" data-act="transcribe">📝 ถอดเป็นข้อความ</button>
-        <button data-act="download-audio">⬇️ ไฟล์เสียง (.webm)</button>
+        <button class="primary" data-act="transcribe">Transcribe</button>
+        <button data-act="download-audio">Audio (.webm)</button>
         <span class="muted status"></span>
       </div>
       <div class="error"></div>
       <div class="transcript" hidden>
         <textarea readonly></textarea>
         <div class="row" style="margin-top:8px">
-          <button data-act="copy">📋 คัดลอก</button>
-          <button data-act="download-txt">⬇️ .txt</button>
-          <button data-act="download-srt">⬇️ .srt</button>
+          <button data-act="copy">Copy</button>
+          <button data-act="download-txt">.txt</button>
+          <button data-act="download-srt">.srt</button>
         </div>
       </div>
     </div>

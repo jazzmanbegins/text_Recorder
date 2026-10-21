@@ -13,7 +13,7 @@ let startedAt = 0;
 let stopResolver = null;
 
 async function start(streamId, recMeta) {
-  if (recorder) throw new Error('กำลังอัดเสียงอยู่แล้ว');
+  if (recorder) throw new Error('Already recording');
 
   stream = await navigator.mediaDevices.getUserMedia({
     audio: { mandatory: { chromeMediaSource: 'tab', chromeMediaSourceId: streamId } },
@@ -74,7 +74,7 @@ async function finish() {
 
 function stop() {
   return new Promise((resolve) => {
-    if (!recorder) return resolve({ ok: false, error: 'ไม่ได้อัดเสียงอยู่' });
+    if (!recorder) return resolve({ ok: false, error: 'Not currently recording' });
     stopResolver = resolve;
     recorder.stop();
   });

@@ -1,13 +1,18 @@
 import { listRecordings, deleteRecording, updateRecording, getRecording } from './db.js';
 import { loadSettings, transcribe, toSrt } from './transcribe.js';
 
+// Embedded in the popup's <iframe>: the host page already shows a heading and a settings
+// link, so drop this page's own copies (inline <script> in <head> would do this earlier, but
+// the extension's CSP — script-src 'self' — blocks inline scripts, so it has to happen here).
+if (window.self !== window.top) document.documentElement.classList.add('embedded');
+
 const list = document.getElementById('list');
 const tpl = document.getElementById('item');
 const objectUrls = [];
 
 function fmtDuration(sec) {
   const m = Math.floor(sec / 60), s = Math.round(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')} นาที`;
+  return `${m}:${String(s).padStart(2, '0')}`;
 }
 
 function safeName(title) {
@@ -21,20 +26,20 @@ function download(blob, filename) {
 
 function progressText(p) {
   switch (p.stage) {
-    case 'decode': return '⏳ กำลังเตรียมไฟล์เสียง...';
-    case 'download': return `⬇️ กำลังโหลดโมเดล ${Math.round((p.loaded / p.total) * 100)}% (${(p.total / 1e6).toFixed(0)} MB — โหลดครั้งแรกครั้งเดียว)`;
-    case 'ready': return `⏳ กำลังถอดเสียงด้วย ${p.device === 'webgpu' ? 'การ์ดจอ (WebGPU)' : 'CPU (ช้ากว่า — Chrome ยังใช้การ์ดจอไม่ได้ ดูวิธีเปิดใน README)'}...`;
-    case 'transcribe': return `⏳ ถอดเสียงแล้ว ${p.done}/${p.total} ช่วง (${Math.round((p.done / p.total) * 100)}%)`;
-    default: return '⏳ กำลังถอดเสียง...';
+    case 'decode': return 'Preparing audio...';
+    case 'download': return `Downloading model ${Math.round((p.loaded / p.total) * 100)}% (${(p.total / 1e6).toFixed(0)} MB — one-time download)`;
+    case 'ready': return `Transcribing with ${p.device === 'webgpu' ? 'GPU (WebGPU)' : 'CPU (slower — WebGPU not available in Chrome yet, see README)'}...`;
+    case 'transcribe': return `Transcribed ${p.done}/${p.total} chunks (${Math.round((p.done / p.total) * 100)}%)`;
+    default: return 'Transcribing...';
   }
 }
 
 function showTranscript(el, transcript) {
   el.querySelector('.transcript').hidden = !transcript;
   if (!transcript) return;
-  el.querySelector('textarea').value = transcript.text;
+  el.querySelector('.transcript > textarea').value = transcript.text;
   el.querySelector('[data-act="download-srt"]').hidden = !transcript.segments?.length;
-  el.querySelector('[data-act="transcribe"]').textContent = '🔁 ถอดใหม่';
+  el.querySelector('[data-act="transcribe"]').textContent = 'Re-transcribe';
 }
 
 function renderItem(rec) {
@@ -42,7 +47,7 @@ function renderItem(rec) {
   el.id = rec.id;
   el.querySelector('.title').textContent = rec.title;
   el.querySelector('.meta').textContent =
-    `${new Date(rec.createdAt).toLocaleString('th-TH')} · ${fmtDuration(rec.duration)} · ${(rec.size / 1048576).toFixed(2)} MB`;
+    `${new Date(rec.createdAt).toLocaleString('en-US')} · ${fmtDuration(rec.duration)} · ${(rec.size / 1048576).toFixed(2)} MB`;
 
   const url = URL.createObjectURL(rec.blob);
   objectUrls.push(url);
@@ -59,7 +64,7 @@ function renderItem(rec) {
     error.textContent = '';
 
     if (act === 'delete') {
-      if (!confirm('ลบไฟล์นี้?')) return;
+      if (!confirm('Delete this recording?')) return;
       await deleteRecording(rec.id);
       el.remove();
       if (!list.children.length) document.getElementById('empty').hidden = false;
@@ -67,19 +72,19 @@ function renderItem(rec) {
       download(rec.blob, `${base}.webm`);
     } else if (act === 'transcribe') {
       e.target.disabled = true;
-      status.textContent = '⏳ กำลังถอดเสียง... (อาจใช้เวลาสักครู่)';
+      status.textContent = 'Transcribing... (this may take a moment)';
       try {
         const transcript = await transcribe(rec.blob, await loadSettings(), (p) => {
           status.textContent = progressText(p);
           if (p.partialText) {
             el.querySelector('.transcript').hidden = false;
-            el.querySelector('textarea').value = p.partialText;
+            el.querySelector('.transcript > textarea').value = p.partialText;
           }
         });
         await updateRecording(rec.id, { transcript });
         rec.transcript = transcript;
         showTranscript(el, transcript);
-        status.textContent = '✅ เสร็จแล้ว';
+        status.textContent = 'Done';
       } catch (err) {
         status.textContent = '';
         error.textContent = err.message;
@@ -88,7 +93,7 @@ function renderItem(rec) {
       }
     } else if (act === 'copy') {
       await navigator.clipboard.writeText(rec.transcript.text);
-      status.textContent = '📋 คัดลอกแล้ว';
+      status.textContent = 'Copied';
     } else if (act === 'download-txt') {
       download(new Blob([rec.transcript.text], { type: 'text/plain;charset=utf-8' }), `${base}.txt`);
     } else if (act === 'download-srt') {
@@ -108,7 +113,9 @@ async function render() {
   if (focusId && (await getRecording(focusId))) {
     const el = document.getElementById(focusId);
     el.classList.add('highlight');
-    el.scrollIntoView({ block: 'center' });
+    // New recordings sort to the top already — scroll there (not 'center', which in the
+    // popup's short iframe tends to crop the card's own top instead of showing it in full).
+    el.scrollIntoView({ block: 'start' });
   }
 }
 
