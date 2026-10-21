@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Text Recorder - อัดเสียงวิดีโอ & ถอดเป็นข้อความ",
+  "version": "1.1.0",
+  "description": "อัดเสียงจากวิดีโอที่เล่นในแท็บ บันทึกเป็นไฟล์เสียง และถอดเสียงเป็นข้อความด้วย Whisper (ในเครื่องหรือผ่าน API)",
+  "permissions": ["activeTab", "tabCapture", "offscreen", "storage", "downloads", "unlimitedStorage"],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://api.groq.com/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "https://huggingface.co/*",
+    "https://*.huggingface.co/*",
+    "https://*.hf.co/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Text Recorder"
+  },
+  "options_page": "options.html"
+}

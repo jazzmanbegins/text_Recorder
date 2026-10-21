@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { width: 300px; padding: 16px; }
+    #timer { font: 600 32px/1 ui-monospace, Consolas, monospace; text-align: center; margin: 12px 0; }
+    #toggle { width: 100%; padding: 10px; font-size: 15px; }
+    #status { text-align: center; min-height: 20px; margin-top: 8px; }
+    .links { display: flex; justify-content: space-between; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <h1>🎙️ Text Recorder</h1>
+  <div class="muted" id="tabTitle"></div>
+  <div id="timer">00:00</div>
+  <button id="toggle" class="primary">● เริ่มอัดเสียงแท็บนี้</button>
+  <div id="status" class="muted"></div>
+  <div class="links">
+    <a href="#" id="openList">📂 ไฟล์ที่อัดไว้ / ถอดข้อความ</a>
+    <a href="#" id="openOptions">⚙️ ตั้งค่า</a>
+  </div>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

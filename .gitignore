@@ -1,0 +1,14 @@
+# Python
+local-server/.venv/
+__pycache__/
+*.pyc
+local-server/installed.flag
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Third-party libs (download with setup-lib.bat)
+lib/*
+!lib/LICENSE-transformers.txt

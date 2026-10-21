@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>ตั้งค่า - Text Recorder</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    main { max-width: 560px; margin: 32px auto; padding: 0 16px; }
+    label { display: block; font-weight: 600; margin: 16px 0 6px; }
+    .note { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); }
+    code { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>⚙️ ตั้งค่าการถอดเสียง</h1>
+    <div class="card">
+      <label for="provider">วิธีถอดเสียง</label>
+      <select id="provider"></select>
+      <div class="note muted" id="providerNote"></div>
+
+      <div id="keyRow">
+        <label for="apiKey">API Key</label>
+        <input id="apiKey" type="password" placeholder="sk-... / gsk_..." autocomplete="off">
+        <div class="muted" id="keyHelp"></div>
+      </div>
+
+      <div id="localRow">
+        <label for="localUrl">URL ของ Local Server</label>
+        <div class="row" style="flex-wrap:nowrap">
+          <input id="localUrl" placeholder="http://127.0.0.1:8765/v1">
+          <button id="testLocal" style="white-space:nowrap">ทดสอบ</button>
+        </div>
+        <div class="muted" id="localStatus"></div>
+      </div>
+
+      <label for="model">โมเดล</label>
+      <select id="model"></select>
+
+      <label for="language">ภาษาของเสียง</label>
+      <select id="language">
+        <option value="">ตรวจจับอัตโนมัติ (แนะนำ)</option>
+        <option value="en">English</option>
+        <option value="th">ไทย</option>
+        <option value="ja">日本語</option>
+        <option value="zh">中文</option>
+        <option value="ko">한국어</option>
+      </select>
+      <div class="muted">ต้องตรงกับภาษาที่พูดในวิดีโอ — ถ้าเลือกผิด Whisper จะพยายามแปลและได้ข้อความมั่ว</div>
+
+      <div class="row" style="margin-top:20px">
+        <button id="save" class="primary">บันทึก</button>
+        <span id="saved" class="muted"></span>
+      </div>
+    </div>
+    <p class="muted">ค่าทั้งหมดเก็บไว้ในเครื่องนี้เท่านั้น (chrome.storage.local) — API Key ถูกส่งไปยังผู้ให้บริการที่เลือกตอนถอดเสียงเท่านั้น</p>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
